@@ -1,0 +1,19 @@
+{
+  "name": "lunr-index-build",
+  "version": "0.0.1",
+  "author": "Oliver Nightingale",
+  "description": "Simple command line tool for building lunr.js indexes",
+  "keywords": [
+    "cli",
+    "lunr"
+  ],
+  "dependencies": {
+    "lunr": ">= 0.3.0",
+    "optimist": "0.4.x",
+    "progress": "0.1.x"
+  },
+  "bin": {
+    "lunr-generator": "./bin/lunr-index-build"
+  },
+  "readmeFilename": "README.md"
+}

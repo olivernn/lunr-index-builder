@@ -1,0 +1,66 @@
+#!/usr/local/bin/node
+
+var lunr = require('lunr'),
+    optimist = require('optimist'),
+    ProgressBar = require('progress')
+
+var argv = optimist
+  .usage('Generates a lunr.js index.\n\n  lunr-index-build -r id -f title:10 -f body < data.json > index.json')
+  .demand('f')
+  .alias('f', 'field')
+  .describe('f', 'Specify a field to index')
+  .alias('r', 'ref')
+  .describe('r', 'Specify the field that will be the document reference')
+  .argv
+
+var arrayWrap = function (obj) {
+  if (Array.isArray(obj)) return obj
+  if (obj === undefined || obj === null) return []
+  return [obj]
+}
+
+var idx = lunr(function () {
+  if (argv.ref) this.ref(argv.ref)
+
+  arrayWrap(argv.field).forEach(function (fieldString) {
+    var fieldParts = fieldString.split(':'),
+        fieldName = fieldParts[0],
+        fieldBoost = fieldParts[1] ? parseInt(fieldParts[1], 10) : 1
+
+    this.field(fieldName, { boost: fieldBoost })
+  }, this)
+})
+
+var inputBuffer = ''
+
+process.stdin.resume()
+process.stdin.setEncoding('utf8')
+
+process.stdin.on('data', function (chunk) {
+  inputBuffer = inputBuffer.concat(chunk)
+})
+
+process.stdin.on('end', function () {
+  try {
+    var documents = JSON.parse(inputBuffer)
+  } catch (e) {
+    console.error('invalid input JSON')
+    process.exit(1)
+  }
+
+  var bar = new ProgressBar ('  indexing [:bar] :percent :etas', {
+    total: documents.length,
+    width: 20,
+    complete: '=',
+    incomplete: ' ',
+    stream: process.stderr
+  })
+
+  documents.forEach(function (document) {
+    idx.add(document)
+    bar.tick(1)
+  })
+
+  process.stdout.write(JSON.stringify(idx))
+  process.stderr.write('\n')
+})
