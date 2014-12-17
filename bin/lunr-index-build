@@ -42,7 +42,7 @@ process.stdin.on('data', function (chunk) {
 
 process.stdin.on('end', function () {
   try {
-    var documents = JSON.parse(inputBuffer)
+    var documents = JSON.parse(inputBuffer).entries
   } catch (e) {
     console.error('invalid input JSON')
     process.exit(1)
